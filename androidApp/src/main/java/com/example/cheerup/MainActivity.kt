@@ -11,8 +11,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.jetbrains.handson.mpp.mobile.GifService
-import com.jetbrains.handson.mpp.mobile.GifType
+import com.epetrova.kmm_sample.GifService
+import com.epetrova.kmm_sample.GifType
 
 class MainActivity : AppCompatActivity() {
 
@@ -80,7 +80,6 @@ class GifTypesAdapter(
     }
 
 }
-
 
 class GifTypeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 

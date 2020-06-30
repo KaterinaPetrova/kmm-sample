@@ -2,22 +2,18 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.3.70"
+    kotlin("plugin.serialization")
+    id("com.android.library")
 }
 
-val ktor_version = "1.3.0"
-val coroutines_version = "1.3.3"
-val serialization_version = "0.14.0"
+val ktor_version = "1.3.2-1.4-M2"
+val coroutines_version = "1.3.7-1.4-M2"
+val serialization_version = "0.20.0-1.4-M2"
+
 
 kotlin {
-    //select iOS target platform depending on the Xcode environment variables
-    val iOSTarget: (String, KotlinNativeTarget.() -> Unit) -> KotlinNativeTarget =
-        if (System.getenv("SDK_NAME")?.startsWith("iphoneos") == true)
-            ::iosArm64
-        else
-            ::iosX64
 
-    iOSTarget("ios") {
+    ios {
         binaries {
             framework {
                 baseName = "SharedCode"
@@ -25,60 +21,57 @@ kotlin {
         }
     }
 
-    jvm("android")
+    android()
 
-    sourceSets["commonMain"].dependencies {
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-common:$coroutines_version")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version")
-
-        implementation("io.ktor:ktor-client-core:$ktor_version")
-        implementation("io.ktor:ktor-client-serialization:$ktor_version")
-    }
-
-    sourceSets["androidMain"].dependencies {
-        implementation("org.jetbrains.kotlin:kotlin-stdlib")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
-
-        implementation("io.ktor:ktor-client-android:$ktor_version")
-        implementation("io.ktor:ktor-client-serialization-jvm:$ktor_version")
-    }
-
-    sourceSets["iosMain"].dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serialization_version")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutines_version")
-
-        implementation("io.ktor:ktor-client-ios:$ktor_version")
-        implementation("io.ktor:ktor-client-serialization-native:$ktor_version")
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(kotlin("stdlib-common"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
+                implementation("io.ktor:ktor-client-core:$ktor_version")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version")
+                implementation("io.ktor:ktor-client-serialization:$ktor_version")
+            }
+        }
+        val androidMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-android:$ktor_version")
+            }
+        }
+        val iosMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-ios:$ktor_version")
+            }
+        }
     }
 }
 
-val packForXcode by tasks.creating(Sync::class) {
-    val targetDir = File(buildDir, "xcode-frameworks")
+android {
+    compileSdkVersion(29)
+    defaultConfig {
+        minSdkVersion(24)
+        targetSdkVersion(29)
+        versionCode = 1
+        versionName = "1.0"
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+        }
+    }
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+}
 
-    /// selecting the right configuration for the iOS
-    /// framework depending on the environment
-    /// variables set by Xcode build
+val packForXcode by tasks.creating(Sync::class) {
+    group = "build"
     val mode = System.getenv("CONFIGURATION") ?: "DEBUG"
-    val framework = kotlin.targets
-        .getByName<KotlinNativeTarget>("ios")
-        .binaries.getFramework(mode)
+    val targetName = if (System.getenv("SDK_NAME")?.startsWith("iphoneos") == true) "iosArm64" else "iosX64"
+    val framework = kotlin.targets.getByName<KotlinNativeTarget>(targetName).binaries.getFramework(mode)
     inputs.property("mode", mode)
     dependsOn(framework.linkTask)
-
+    val targetDir = File(buildDir, "xcode-frameworks")
     from({ framework.outputDirectory })
     into(targetDir)
-
-    /// generate a helpful ./gradlew wrapper with embedded Java path
-    doLast {
-        val gradlew = File(targetDir, "gradlew")
-        gradlew.writeText("#!/bin/bash\n"
-                + "export 'JAVA_HOME=${System.getProperty("java.home")}'\n"
-                + "cd '${rootProject.rootDir}'\n"
-                + "./gradlew \$@\n")
-        gradlew.setExecutable(true)
-    }
 }
 
 tasks.getByName("build").dependsOn(packForXcode)

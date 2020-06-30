@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.jetbrains.handson.mpp.mobile.Gif
-import com.jetbrains.handson.mpp.mobile.GifService
+import com.epetrova.kmm_sample.Gif
+import com.epetrova.kmm_sample.GifService
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 

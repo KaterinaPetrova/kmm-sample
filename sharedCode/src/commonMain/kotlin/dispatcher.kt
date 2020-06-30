@@ -1,4 +1,5 @@
-package com.jetbrains.handson.mpp.mobile
+package com.epetrova.kmm_sample
+
 import kotlinx.coroutines.CoroutineDispatcher
 
 internal expect fun  dispatcher(): CoroutineDispatcher

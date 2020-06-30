@@ -1,4 +1,4 @@
-package com.jetbrains.handson.mpp.mobile
+package com.epetrova.kmm_sample
 
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.JsonFeature
@@ -71,7 +71,7 @@ class GifService: CoroutineScope {
     }
 
     val availableTypes = listOf(
-        GifType("🐱", "kitten", generateRandomPastelColor()),
+        GifType("🐱", "kittens", generateRandomPastelColor()),
         GifType("🐶", "puppy", generateRandomPastelColor()),
         GifType("🦜", "parrot", generateRandomPastelColor()),
         GifType("🙊", "baby monkey", generateRandomPastelColor()),
