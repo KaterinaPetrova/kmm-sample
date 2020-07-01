@@ -24,10 +24,14 @@ class GifsViewController: UIViewController, UICollectionViewDelegate, UICollecti
         
         self.title = selectedGifTypes.map{  $0.title }.joined(separator: " + ")
         loadingIndicator.startAnimating()
-        gifService.getGifs(types: selectedGifTypes, completion: { result in
-            self.gifs = result
-            self.collectionView.reloadData()
-            self.loadingIndicator.stopAnimating()
+        gifService.getGifs(types: selectedGifTypes, completionHandler: { (result, error) in
+            if let gifs = result {
+                self.gifs = gifs
+                self.collectionView.reloadData()
+                self.loadingIndicator.stopAnimating()
+            } else if let error = error {
+                print(error)
+            }
         })
     }
     

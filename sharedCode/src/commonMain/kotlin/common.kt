@@ -55,14 +55,14 @@ data class GifImage (
     val width: Int
 )
 
-class GifService: CoroutineScope {
+class GifService {
     private val client = HttpClient {
         install(JsonFeature) {
             serializer = KotlinxSerializer(Json.nonstrict)
         }
     }
 
-    override val coroutineContext: CoroutineContext = dispatcher() + SupervisorJob()
+    // override val coroutineContext: CoroutineContext = dispatcher() + SupervisorJob()
 
     companion object {
         private const val baseUrl = "https://api.giphy.com/v1/gifs"
